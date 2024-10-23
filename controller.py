@@ -8,6 +8,14 @@ M_PI=3.1415926535
 
 P=0; PD=1; PI=2; PID=3
 
+# Turtlebot3 Burger limits
+LIN_LIMIT = 0.22
+ANG_LIMIT = 2.84
+
+# Turtlebot4 limits
+# LIN_LIMIT = 0.31
+# ANG_LIMIT = 1.90
+
 class controller:
     
     
@@ -30,8 +38,8 @@ class controller:
         
         # TODO Part 4: Add saturation limits for the robot linear and angular velocity
 
-        linear_vel = ... if linear_vel > 1.0 else linear_vel
-        angular_vel= ... if angular_vel > 1.0 else angular_vel
+        linear_vel = LIN_LIMIT if linear_vel > LIN_LIMIT else linear_vel
+        angular_vel= ANG_LIMIT if angular_vel > ANG_LIMIT else angular_vel
         
         return linear_vel, angular_vel
     
@@ -57,8 +65,8 @@ class trajectoryController(controller):
 
         # TODO Part 5: Add saturation limits for the robot linear and angular velocity
 
-        linear_vel = ... if linear_vel > ... else linear_vel
-        angular_vel= ... if angular_vel > ... else angular_vel
+        linear_vel = LIN_LIMIT if linear_vel > LIN_LIMIT else linear_vel
+        angular_vel= ANG_LIMIT if angular_vel > ANG_LIMIT else angular_vel
         
         return linear_vel, angular_vel
 
