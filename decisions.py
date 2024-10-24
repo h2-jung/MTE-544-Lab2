@@ -63,7 +63,10 @@ class decision_maker(Node):
         
         # TODO Part 3: Run the localization node
         ...    # Remember that this file is already running the decision_maker node.
-
+        rclpy.spin(self.localizer)
+        
+        pose = self.localizer.getPose()
+        
         if self.localizer.getPose()  is  None:
             print("waiting for odom msgs ....")
             return
@@ -72,9 +75,9 @@ class decision_maker(Node):
         
         # TODO Part 3: Check if you reached the goal
         if type(self.goal) == list:
-            reached_goal=...
+            reached_goal= (abs(pose[0]-self.goal[0]) == 0 and abs(pose[1] - self.goal[1]) == 0)
         else: 
-            reached_goal=...
+            reached_goal= False
         
 
         if reached_goal:
@@ -85,6 +88,7 @@ class decision_maker(Node):
             self.controller.PID_linear.logger.save_log()
             
             #TODO Part 3: exit the spin
+            self.callback_timer.cancel()
             
         
         velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
