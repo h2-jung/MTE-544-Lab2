@@ -44,7 +44,6 @@ class PID_ctrl:
         
         if (len(self.history) > self.history_length):
             self.history.pop(0)
-        
         # If insufficient data points, use only the proportional gain
         if (len(self.history) != self.history_length):
             return self.kp * latest_error

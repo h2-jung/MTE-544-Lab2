@@ -36,15 +36,18 @@ class decision_maker(Node):
         
         # Instantiate the controller
         # TODO Part 5: Tune your parameters here
+        self.type = motion_type
     
         if motion_type == POINT_PLANNER:
             self.controller=controller(klp=0.2, klv=0.5, kap=0.8, kav=0.6)
             self.planner=planner(POINT_PLANNER)    
+            # print("POINT PLANNER SELECTED")
     
     
         elif motion_type==TRAJECTORY_PLANNER:
             self.controller=trajectoryController(klp=0.2, klv=0.5, kap=0.8, kav=0.6)
             self.planner=planner(TRAJECTORY_PLANNER)
+            # print("POINT TRAJECTORY SELECTED")
 
         else:
             print("Error! you don't have this planner", file=sys.stderr)
@@ -52,22 +55,23 @@ class decision_maker(Node):
 
         # Instantiate the localization, use rawSensor for now  
         self.localizer=localization(rawSensor)
+        # print("LOCALIZATION")
 
         # Instantiate the planner
         # NOTE: goalPoint is used only for the pointPlanner
         self.goal=self.planner.plan(goalPoint)
-
+        # print(f"GOAL SET: {self.goal}")
         self.create_timer(publishing_period, self.timerCallback)
 
 
     def timerCallback(self):
-        
+        # print("TIMER CALLBACK")
         # TODO Part 3: Run the localization node
         ...    # Remember that this file is already running the decision_maker node.
-        rclpy.spin(self.localizer)
-        
+        rclpy.spin_once(self.localizer)
+        # print("SPIN LOCATOR")
         pose = self.localizer.getPose()
-        
+        print(f"POSE: {pose}")
         if self.localizer.getPose()  is  None:
             print("waiting for odom msgs ....")
             return
@@ -75,8 +79,12 @@ class decision_maker(Node):
         vel_msg=Twist()
         
         # TODO Part 3: Check if you reached the goal
-        if type(self.goal) == list:
-            reached_goal= (abs(pose[0]-self.goal[0]) == 0 and abs(pose[1] - self.goal[1]) == 0)
+        reached_goal = False
+        if type(self.goal) == list:            
+            reached_goal= (abs(pose[0]-self.goal[-1][0]) < 0.01 and abs(pose[1] - self.goal[-1][1]) < 0.01)
+                
+        elif type(self.goal) == tuple:
+            reached_goal= (abs(pose[0]-self.goal[0]) < 0.01 and abs(pose[1] - self.goal[1]) < 0.01)
         else: 
             reached_goal= False
         
@@ -91,7 +99,7 @@ class decision_maker(Node):
             #TODO Part 3: exit the spin
             self.callback_timer.cancel()
             
-        
+        print(f"GOALS: {self.goal}")
         velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
 
         #TODO Part 4: Publish the velocity to move the robot
@@ -115,7 +123,7 @@ def main(args=None):
 
     # TODO Part 4: instantiate the decision_maker with the proper parameters for moving the robot
     if args.motion.lower() == "point":
-        DM=decision_maker(Twist, "/cmd_vel", odom_qos, [0.0, 0.0], motion_type=POINT_PLANNER)
+        DM=decision_maker(Twist, "/cmd_vel", odom_qos, [-5.0, -13.0], motion_type=POINT_PLANNER)
     elif args.motion.lower() == "trajectory":
         DM=decision_maker(Twist, "/cmd_vel", odom_qos, [0.0, 0.0], motion_type=TRAJECTORY_PLANNER)
     else:
